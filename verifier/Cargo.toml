@@ -1,0 +1,35 @@
+[package]
+name = "ckb-bitcoin-spv-verifier"
+version = "0.1.0"
+authors = ["Boyu Yang <yangby@cryptape.com>"]
+edition = "2021"
+license = "MIT"
+description = "Bitcoin simplified payment verification (the verifier part)."
+homepage = "https://github.com/yangby-cryptape/ckb-bitcoin-spv"
+repository = "https://github.com/yangby-cryptape/ckb-bitcoin-spv"
+
+[dependencies]
+bitcoin = { version = "0.31", default-features = false }
+bitcoin_hashes = { version = "0.13", default-features = false }
+ethereum-types = { version = "0.14.1", default-features = false }
+molecule = { version = "=0.7.5", default-features = false }
+ckb-mmr = { version = "0.6", default-features = false, package = "ckb-merkle-mountain-range" }
+log = { version = "0.4", optional = true }
+
+[dev-dependencies]
+env_logger = "0.11"
+walkdir = "2.4"
+
+[features]
+default = ["std"]
+std = [
+    "bitcoin/std",
+    "bitcoin_hashes/std",
+    "ethereum-types/std",
+    "molecule/std",
+    "ckb-mmr/std",
+    "log",
+]
+no-std = [
+    "bitcoin/no-std",
+]

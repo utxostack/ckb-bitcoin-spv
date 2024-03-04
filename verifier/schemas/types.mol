@@ -1,0 +1,77 @@
+// Ref: ../src/types/core.rs
+
+//
+// Basic
+//
+
+array Uint32 [byte; 4];
+array Hash [byte; 32];
+
+array Header [byte; 80];
+vector HeaderVec <Header>;
+
+vector Bytes <byte>;
+
+//
+// Proofs
+//
+
+struct HeaderDigest {
+    min_height: Uint32,
+    max_height: Uint32,
+    children_hash: Hash,
+}
+
+vector MmrProof <HeaderDigest>;
+
+//
+// Cells Data
+//
+
+struct SpvInfo {
+    tip_client_id: byte,
+}
+
+struct TargetAdjustInfo {
+    // The `time` of the latest 2016-th header.
+    start_time: Uint32,
+    // The `nbits` of the next header.
+    next_compact_target: Uint32,
+}
+
+struct SpvClient {
+    id: byte,
+    tip_block_hash: Hash,
+    headers_mmr_root: HeaderDigest,
+    target_adjust_info: TargetAdjustInfo,
+}
+
+//
+// Script Args
+//
+
+struct SpvTypeArgs {
+    type_id: Hash,
+    clients_count: byte,
+}
+
+//
+// Witnesses
+//
+
+struct SpvBootstrap {
+    height: Uint32,
+    header: Header,
+}
+
+table SpvUpdate {
+    headers: HeaderVec,
+    new_headers_mmr_proof: MmrProof,
+}
+
+table TransactionProof {
+    tx_index: Uint32,
+    height: Uint32,
+    transaction_proof: Bytes,
+    header_proof: MmrProof,
+}
