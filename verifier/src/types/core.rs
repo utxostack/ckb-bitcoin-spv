@@ -14,8 +14,8 @@ use alloc::fmt;
 use alloc::vec::Vec;
 
 pub use bitcoin::{
-    blockdata::block::Header,
-    blockdata::transaction::Transaction,
+    blockdata::{block::Header, transaction::Transaction},
+    hash_types::Txid,
     merkle_tree::MerkleBlock,
     pow::{CompactTarget, Target},
 };

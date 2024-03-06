@@ -5,7 +5,6 @@ use alloc::{vec, vec::Vec};
 use bitcoin::{
     blockdata::constants::DIFFCHANGE_INTERVAL,
     consensus::{deserialize, encode::Error as EncodeError, serialize},
-    Txid,
 };
 use molecule::bytes::Bytes;
 
@@ -254,55 +253,98 @@ impl packed::SpvClient {
 
     /// Verifies whether a transaction is in the chain or not.
     ///
+    /// Do the same checks as `self.verify_transaction(..)`,
+    /// but require the transaction data as an input argument rather than `Txid`.
+    ///
+    /// Since the header and the transaction has been recovered from bytes,
+    /// so this function return them in order to any possible future usages.
+    /// If you don't need them, just ignore them.
+    pub fn verify_transaction_data(
+        &self,
+        tx: &[u8],
+        tx_proof: packed::TransactionProofReader,
+        confirmations: u32,
+    ) -> Result<(core::Header, core::Transaction), VerifyTxError> {
+        let tx: core::Transaction =
+            deserialize(tx).map_err(|_| VerifyTxError::DecodeTransaction)?;
+        let txid = tx.txid();
+        let header = self.verify_transaction(&txid, tx_proof, confirmations)?;
+        Ok((header, tx))
+    }
+
+    /// Verifies whether a transaction is in the chain or not.
     ///
     /// Checks:
     /// - Check if the transaction is contained in the provided header (via Merkle proof).
     ///   - In current version, only one transaction could be included in the Merkle proof.
     /// - Check if the header is contained in the Bitcoin chain (via MMR proof).
+    /// - Check the confirmation blocks based on the tip header in current SPV client.
+    ///   - `0` means skip the check of the confirmation blocks.
+    ///
+    /// Since the header has been recovered from bytes, so this function return it
+    /// in order to any possible future usages.
+    /// If you don't need it, just ignore it.
     pub fn verify_transaction(
         &self,
-        tx: &[u8],
+        txid: &core::Txid,
         tx_proof: packed::TransactionProofReader,
-    ) -> Result<core::Transaction, VerifyTxError> {
+        confirmations: u32,
+    ) -> Result<core::Header, VerifyTxError> {
+        let height: u32 = tx_proof.height().unpack();
+        let min_height = self.headers_mmr_root().min_height().unpack();
+        let max_height = self.headers_mmr_root().max_height().unpack();
+
         // Verify Transaction
-        let (header, tx) = {
-            let tx: core::Transaction =
-                deserialize(tx).map_err(|_| VerifyTxError::DecodeTransaction)?;
+        if min_height > height {
+            return Err(VerifyTxError::TransactionTooOld);
+        }
+        if height > max_height {
+            return Err(VerifyTxError::TransactionTooNew);
+        }
+        if confirmations > 0 && max_height - height < confirmations {
+            return Err(VerifyTxError::TransactionUnconfirmed);
+        }
+
+        // Verify TxOut proof
+        let header = {
             let merkle_block: core::MerkleBlock =
                 deserialize(tx_proof.transaction_proof().raw_data())
                     .map_err(|_| VerifyTxError::DecodeTxOutProof)?;
 
-            let mut matches: Vec<Txid> = vec![];
+            let mut matches: Vec<core::Txid> = vec![];
             let mut indexes: Vec<u32> = vec![];
 
             merkle_block
                 .extract_matches(&mut matches, &mut indexes)
-                .map_err(|_| VerifyTxError::TxOutProof)?;
+                .map_err(|_| VerifyTxError::TxOutProofIsInvalid)?;
 
-            if matches.len() != 1 || indexes.len() != 1 {
-                return Err(VerifyTxError::TxOutProof);
+            if matches.len() != indexes.len() {
+                return Err(VerifyTxError::TxOutProofIsInvalid);
             }
 
             let tx_index: u32 = tx_proof.tx_index().unpack();
-            let txid = tx.txid();
+            indexes
+                .into_iter()
+                .position(|v| v == tx_index)
+                .map(|i| matches[i])
+                .ok_or(VerifyTxError::TxOutProofInvalidTxIndex)
+                .and_then(|ref id| {
+                    if id == txid {
+                        Ok(())
+                    } else {
+                        Err(VerifyTxError::TxOutProofInvalidTxId)
+                    }
+                })?;
 
-            if txid != matches[0] || tx_index != indexes[0] {
-                return Err(VerifyTxError::TxOutProof);
-            }
-
-            let header = merkle_block.header;
-
-            (header, tx)
+            merkle_block.header
         };
 
-        // Verify Header
+        // Verify Header MMR proof
         {
-            let height: u32 = tx_proof.height().unpack();
             let block_hash = header.block_hash();
 
-            let min_height = self.headers_mmr_root().min_height().unpack();
             let proof: mmr::MMRProof = {
-                let max_index = self.headers_mmr_root().max_height().unpack() - min_height;
+                let max_index = max_height - min_height;
                 let mmr_size = leaf_index_to_mmr_size(u64::from(max_index));
                 trace!(
                     "verify MMR proof for header-{height} with \
@@ -329,6 +371,7 @@ impl packed::SpvClient {
                 .verify(self.headers_mmr_root(), digests_with_positions)
                 .map_err(|_| VerifyTxError::HeaderMmrProof)?;
         }
-        Ok(tx)
+
+        Ok(header)
     }
 }
