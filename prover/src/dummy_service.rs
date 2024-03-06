@@ -113,6 +113,14 @@ impl DummyService {
         self.client.clone()
     }
 
+    pub fn min_height(&self) -> u32 {
+        self.client.headers_mmr_root.min_height
+    }
+
+    pub fn max_height(&self) -> u32 {
+        self.client.headers_mmr_root.max_height
+    }
+
     pub fn generate_header_proof(&self, height: u32) -> Result<Option<core::MmrProof>> {
         if height < self.client.headers_mmr_root.min_height
             || self.client.headers_mmr_root.max_height < height

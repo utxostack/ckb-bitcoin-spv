@@ -1,45 +1,52 @@
 #[repr(i8)]
 pub enum BootstrapError {
     // Basic errors.
-    DecodeHeader = 1,
+    DecodeHeader = 0x01,
     // Check data.
-    Height = 9,
+    Height = 0x09,
     Pow,
     // This is not an error, just make sure the error code is less than 32.
-    Unreachable = 32,
+    Unreachable = 0x20,
 }
 
 #[repr(i8)]
 pub enum UpdateError {
     // Basic errors.
-    DecodeHeader = 1,
+    DecodeHeader = 0x01,
     DecodeTargetAdjustInfo,
     // Check headers.
-    EmptyHeaders = 9,
+    EmptyHeaders = 0x09,
     UncontinuousHeaders,
     Difficulty,
     Pow,
     // Check MMR proof.
-    Mmr = 17,
+    Mmr = 0x11,
     HeadersMmrProof,
     // Check new client.
-    ClientId = 25,
+    ClientId = 0x19,
     ClientTipBlockHash,
     ClientMinimalHeight,
     ClientMaximalHeight,
     ClientTargetAdjustInfo,
     // This is not an error, just make sure the error code is less than 32.
-    Unreachable = 32,
+    Unreachable = 0x20,
 }
 
 #[repr(i8)]
 pub enum VerifyTxError {
     // Basic errors.
-    DecodeTransaction = 1,
+    DecodeTransaction = 0x01,
     DecodeTxOutProof,
-    // Check
-    TxOutProof = 9,
-    HeaderMmrProof,
+    // Transaction related errors.
+    TransactionUnconfirmed = 0x09,
+    TransactionTooOld,
+    TransactionTooNew,
+    // Check txout proof.
+    TxOutProofIsInvalid = 0x11,
+    TxOutProofInvalidTxIndex,
+    TxOutProofInvalidTxId,
+    // Check header mmr proof.
+    HeaderMmrProof = 0x19,
     // This is not an error, just make sure the error code is less than 32.
-    Unreachable = 32,
+    Unreachable = 0x20,
 }
