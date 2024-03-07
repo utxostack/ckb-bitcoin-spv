@@ -268,7 +268,7 @@ impl packed::SpvClient {
         let tx: core::Transaction =
             deserialize(tx).map_err(|_| VerifyTxError::DecodeTransaction)?;
         let txid = tx.txid();
-        let header = self.verify_transaction(&txid, tx_proof, confirmations)?;
+        let header = self.verify_transaction(txid.as_ref(), tx_proof, confirmations)?;
         Ok((header, tx))
     }
 
@@ -286,7 +286,7 @@ impl packed::SpvClient {
     /// If you don't need it, just ignore it.
     pub fn verify_transaction(
         &self,
-        txid: &core::Txid,
+        txid: &[u8; 32],
         tx_proof: packed::TransactionProofReader,
         confirmations: u32,
     ) -> Result<core::Header, VerifyTxError> {
@@ -328,8 +328,9 @@ impl packed::SpvClient {
                 .position(|v| v == tx_index)
                 .map(|i| matches[i])
                 .ok_or(VerifyTxError::TxOutProofInvalidTxIndex)
-                .and_then(|ref id| {
-                    if id == txid {
+                .and_then(|id| {
+                    let id_bytes: &[u8; 32] = id.as_ref();
+                    if id_bytes == txid {
                         Ok(())
                     } else {
                         Err(VerifyTxError::TxOutProofInvalidTxId)

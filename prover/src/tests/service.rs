@@ -143,16 +143,17 @@ fn test_spv_client(
 
                 log::debug!(">>> with confirmations {confirmations}");
 
+                let txid_array = txid.as_ref();
                 let verify_result = tip_client
-                    .verify_transaction(&txid, tx_proof.as_reader(), confirmations - 1)
+                    .verify_transaction(txid_array, tx_proof.as_reader(), confirmations - 1)
                     .map_err(|err| err as i8);
                 assert!(verify_result.is_ok());
                 let verify_result = tip_client
-                    .verify_transaction(&txid, tx_proof.as_reader(), confirmations)
+                    .verify_transaction(txid_array, tx_proof.as_reader(), confirmations)
                     .map_err(|err| err as i8);
                 assert!(verify_result.is_ok());
                 let verify_result = tip_client
-                    .verify_transaction(&txid, tx_proof.as_reader(), confirmations + 1)
+                    .verify_transaction(txid_array, tx_proof.as_reader(), confirmations + 1)
                     .map_err(|err| err as i8);
                 assert!(verify_result.is_err());
             }
