@@ -3,7 +3,7 @@
 mod block;
 mod dummy_service;
 mod result;
-pub(crate) mod utilities;
+pub mod utilities;
 
 #[cfg(test)]
 mod tests;

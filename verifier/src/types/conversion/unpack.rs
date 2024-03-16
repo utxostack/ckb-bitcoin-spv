@@ -1,7 +1,5 @@
 use alloc::borrow::ToOwned;
 
-use bitcoin_hashes::Hash as _;
-
 use crate::types::{core, packed, prelude::*};
 
 macro_rules! impl_conversion_for_entity_unpack {

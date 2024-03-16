@@ -58,7 +58,7 @@ fn test_spv_client(
             .unwrap();
         log::trace!("process header-{height} from file {}", header_bin.display());
 
-        let update = service.update(header).unwrap();
+        let update = service.update(vec![header]).unwrap();
         let new_client: packed::SpvClient = service.tip_client().pack();
 
         old_client

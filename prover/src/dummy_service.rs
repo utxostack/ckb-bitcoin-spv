@@ -47,51 +47,59 @@ impl DummyService {
         })
     }
 
-    pub fn update(&mut self, header: core::Header) -> Result<packed::SpvUpdate> {
-        let height = self.client.headers_mmr_root.max_height + 1;
-        let positions = {
-            let index = height - self.client.headers_mmr_root.min_height;
-            let position = mmr::lib::leaf_index_to_pos(u64::from(index));
-            vec![position]
-        };
+    pub fn update(&mut self, headers: Vec<core::Header>) -> Result<packed::SpvUpdate> {
         let mut mmr = {
             let last_index =
                 self.client.headers_mmr_root.max_height - self.client.headers_mmr_root.min_height;
             let mmr_size = mmr::lib::leaf_index_to_mmr_size(u64::from(last_index));
             mmr::ClientRootMMR::new(mmr_size, &self.store)
         };
-        let block_hash = header.block_hash().into();
-        let digest = core::HeaderDigest::new_leaf(height, block_hash).pack();
-        mmr.push(digest)?;
 
-        match (height + 1) % DIFFCHANGE_INTERVAL {
-            0 => {
-                let curr_target: core::Target = header.bits.into();
-                log::trace!(
-                    ">>> height {height:07}, time: {}, target {curr_target:#x}",
-                    header.time
-                );
-                let start_time: u32 = self.client.target_adjust_info.start_time().unpack();
-                let next_target = calculate_next_target(curr_target, start_time, header.time);
-                log::info!(">>> calculated new target  {next_target:#x}");
-                let next_bits = next_target.to_compact_lossy();
-                let next_target: core::Target = next_bits.into();
-                log::info!(">>> after definition lossy {next_target:#x}");
+        let mut positions = Vec::new();
+        let mut block_hash = core::Hash::all_zeros();
+        let mut height = 0;
 
-                self.client.target_adjust_info =
-                    packed::TargetAdjustInfo::encode(start_time, next_bits);
-            }
-            1 => {
-                self.client.target_adjust_info =
-                    packed::TargetAdjustInfo::encode(header.time, header.bits);
-            }
-            _ => {}
-        };
+        for header in &headers {
+            height = self.client.headers_mmr_root.max_height + 1;
+
+            let index = height - self.client.headers_mmr_root.min_height;
+            let position = mmr::lib::leaf_index_to_pos(u64::from(index));
+
+            block_hash = header.block_hash().into();
+            let digest = core::HeaderDigest::new_leaf(height, block_hash).pack();
+
+            positions.push(position);
+            mmr.push(digest)?;
+            self.headers.insert(height, header.to_owned());
+
+            match (height + 1) % DIFFCHANGE_INTERVAL {
+                0 => {
+                    let curr_target: core::Target = header.bits.into();
+                    log::trace!(
+                        ">>> height {height:07}, time: {}, target {curr_target:#x}",
+                        header.time
+                    );
+                    let start_time: u32 = self.client.target_adjust_info.start_time().unpack();
+                    let next_target = calculate_next_target(curr_target, start_time, header.time);
+                    log::info!(">>> calculated new target  {next_target:#x}");
+                    let next_bits = next_target.to_compact_lossy();
+                    let next_target: core::Target = next_bits.into();
+                    log::info!(">>> after definition lossy {next_target:#x}");
+
+                    self.client.target_adjust_info =
+                        packed::TargetAdjustInfo::encode(start_time, next_bits);
+                }
+                1 => {
+                    self.client.target_adjust_info =
+                        packed::TargetAdjustInfo::encode(header.time, header.bits);
+                }
+                _ => {}
+            };
+        }
 
         self.client.tip_block_hash = block_hash;
         self.client.headers_mmr_root.max_height = height;
         self.client.headers_mmr_root = mmr.get_root()?.unpack();
-        self.headers.insert(height, header);
 
         let headers_mmr_proof_items = mmr
             .gen_proof(positions)?
@@ -104,7 +112,7 @@ impl DummyService {
             .set(headers_mmr_proof_items)
             .build();
         Ok(packed::SpvUpdate::new_builder()
-            .headers(vec![header].pack())
+            .headers(headers.pack())
             .new_headers_mmr_proof(headers_mmr_proof)
             .build())
     }
