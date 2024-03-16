@@ -57,10 +57,10 @@ impl DummyService {
 
         let mut positions = Vec::new();
         let mut block_hash = core::Hash::all_zeros();
-        let mut height = 0;
+        let mut height = self.client.headers_mmr_root.max_height;
 
         for header in &headers {
-            height = self.client.headers_mmr_root.max_height + 1;
+            height += 1;
 
             let index = height - self.client.headers_mmr_root.min_height;
             let position = mmr::lib::leaf_index_to_pos(u64::from(index));
