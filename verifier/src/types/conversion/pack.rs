@@ -1,7 +1,6 @@
 use alloc::vec::Vec;
 
 use bitcoin::consensus::serialize;
-use bitcoin_hashes::Hash as _;
 
 use crate::types::{bytes::Bytes, core, packed, prelude::*};
 

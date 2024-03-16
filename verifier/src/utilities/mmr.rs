@@ -4,7 +4,6 @@
 
 use alloc::format;
 
-use bitcoin_hashes::Hash as _;
 use ckb_mmr::{Error as MMRError, Merge, MerkleProof, Result as MMRResult, MMR};
 
 use crate::{
