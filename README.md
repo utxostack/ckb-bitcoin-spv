@@ -1,6 +1,7 @@
 # CKB Bitcoin SPV
 
 [![License]](#license)
+[![GitHub Actions]](https://github.com/ckb-cell/ckb-bitcoin-spv/actions)
 
 > [!WARNING]
 > This repository is still in the proof-of-concept stage.
@@ -8,6 +9,7 @@
 A [Bitcoin] SPV library, which is used to develop Bitcoin SPV on [CKB].
 
 [License]: https://img.shields.io/badge/License-MIT-blue.svg
+[GitHub Actions]: https://github.com/ckb-cell/ckb-bitcoin-spv/workflows/CI/badge.svg
 
 ## Resources
 
