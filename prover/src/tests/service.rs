@@ -1,4 +1,4 @@
-use std::{format, fs::File, io::Read as _};
+use std::{format, fs::File, io::Read as _, mem};
 
 use bitcoin::consensus::serialize;
 use ckb_bitcoin_spv_verifier::types::{core, packed, prelude::*};
@@ -47,6 +47,8 @@ fn test_spv_client(
 
     // Update
     let mut old_client: packed::SpvClient = service.tip_client().pack();
+    let mut headers = Vec::new();
+    let mut headers_group_size = 1;
     for header_bin in header_bins_iter {
         let header: core::Header = utilities::decode_from_bin_file(&header_bin).unwrap();
         let height: u32 = header_bin
@@ -58,7 +60,18 @@ fn test_spv_client(
             .unwrap();
         log::trace!("process header-{height} from file {}", header_bin.display());
 
-        let update = service.update(vec![header]).unwrap();
+        headers.push(header);
+        if height + 1 != verify_tx_range.0 && headers.len() < headers_group_size {
+            continue;
+        }
+
+        log::trace!("process {} headers at one time", headers.len());
+        let update = service.update(mem::take(&mut headers)).unwrap();
+        if verify_tx_range.0 <= height + 1 && height <= verify_tx_range.1 {
+            headers_group_size = 1;
+        } else {
+            headers_group_size += 1;
+        }
         let new_client: packed::SpvClient = service.tip_client().pack();
 
         old_client
