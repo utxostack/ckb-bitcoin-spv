@@ -8,7 +8,7 @@ use ckb_bitcoin_spv_verifier::{
     utilities::{bitcoin::calculate_next_target, mmr},
 };
 
-use crate::result::Result;
+use crate::result::{Error, Result};
 
 /// A dummy service for testing the SPV client cells's bootstrap and update.
 pub struct DummyService {
@@ -20,7 +20,11 @@ pub struct DummyService {
 impl DummyService {
     pub fn bootstrap(height: u32, header: core::Header) -> Result<Self> {
         if height % DIFFCHANGE_INTERVAL != 0 {
-            panic!("bad height");
+            let msg = format!(
+                "bad bootstrap height, expected multiples of \
+                {DIFFCHANGE_INTERVAL} but got {height}"
+            );
+            return Err(Error::other(msg));
         }
         let mut headers = HashMap::new();
         let store = mmr::lib::util::MemStore::default();
@@ -115,6 +119,26 @@ impl DummyService {
             .headers(headers.pack())
             .new_headers_mmr_proof(headers_mmr_proof)
             .build())
+    }
+
+    // The `prev_client` is not checked, since this is just a dummy service for testing purpose only.
+    pub fn rollback_to(&mut self, prev_client: core::SpvClient) -> Result<()> {
+        let prev_height = prev_client.headers_mmr_root.max_height;
+        if prev_height < self.client.headers_mmr_root.min_height
+            || self.client.headers_mmr_root.max_height < prev_height
+        {
+            let msg = format!(
+                "the previous header (height: {prev_height}) is not found (current: [{}, {}])",
+                self.client.headers_mmr_root.min_height, self.client.headers_mmr_root.max_height
+            );
+            return Err(Error::other(msg));
+        }
+        let curr_height = self.client.headers_mmr_root.max_height;
+        for h in (prev_height + 1)..=curr_height {
+            self.headers.remove(&h);
+        }
+        self.client = prev_client;
+        Ok(())
     }
 
     pub fn tip_client(&self) -> core::SpvClient {
