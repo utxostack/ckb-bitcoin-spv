@@ -16,7 +16,7 @@ pub enum Error {
 pub type Result<T> = ::std::result::Result<T, Error>;
 
 impl Error {
-    pub(crate) fn other<S: ToString>(arg: S) -> Self {
+    pub fn other<S: ToString>(arg: S) -> Self {
         Self::Other(arg.to_string())
     }
 }
