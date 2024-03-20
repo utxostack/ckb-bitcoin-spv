@@ -85,7 +85,7 @@ fn test_spv_client(
         let new_client: packed::SpvClient = service.tip_client().pack();
 
         old_client
-            .verify_new_client(&new_client, update)
+            .verify_new_client(&new_client, update, 0)
             .map_err(|err| err as i8)
             .unwrap();
         old_client = new_client;

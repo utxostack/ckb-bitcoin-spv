@@ -84,6 +84,12 @@ pub struct SpvTypeArgs {
     ///
     /// N.B. Exclude the SPV info cell.
     pub clients_count: u8,
+    /// Bit flags to control features.
+    ///
+    /// From high to low:
+    /// - Set 0-th bit to true, to disable difficulty checks.
+    /// - Other bits are reserved.
+    pub flags: u8,
 }
 
 #[cfg(feature = "std")]

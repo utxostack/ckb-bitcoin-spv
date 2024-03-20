@@ -9,6 +9,7 @@ use bitcoin::{
 use molecule::bytes::Bytes;
 
 use crate::{
+    constants,
     core::result::Result,
     error::{BootstrapError, UpdateError, VerifyTxError},
     types::{core, packed, prelude::*},
@@ -67,6 +68,7 @@ impl packed::SpvBootstrap {
         let header: core::Header =
             deserialize(&self.header().raw_data()).map_err(|_| BootstrapError::DecodeHeader)?;
         // Verify POW: just trust the input header.
+        // TODO Check constants::FLAG_DISABLE_DIFFICULTY_CHECK before return errors.
         let block_hash = header
             .validate_pow(header.target())
             .map_err(|_| BootstrapError::Pow)?
@@ -106,6 +108,7 @@ impl packed::SpvClient {
         &self,
         packed_new_client: &Self,
         update: packed::SpvUpdate,
+        flags: u8,
     ) -> Result<(), UpdateError> {
         let old_client = self.unpack();
         let new_client = packed_new_client.unpack();
@@ -146,13 +149,19 @@ impl packed::SpvClient {
                         expect {expected} but got {actual}"
                     );
                 });
-                return Err(UpdateError::Difficulty);
+                if flags & constants::FLAG_DISABLE_DIFFICULTY_CHECK == 0 {
+                    return Err(UpdateError::Difficulty);
+                }
             }
             // Check POW.
-            new_tip_block_hash = header
-                .validate_pow(new_info.1.into())
-                .map_err(|_| UpdateError::Pow)?
-                .into();
+            new_tip_block_hash = if flags & constants::FLAG_DISABLE_DIFFICULTY_CHECK == 0 {
+                header
+                    .validate_pow(new_info.1.into())
+                    .map_err(|_| UpdateError::Pow)?
+            } else {
+                header.block_hash()
+            }
+            .into();
             // Update the target adjust info.
             {
                 match (new_max_height + 1) % DIFFCHANGE_INTERVAL {

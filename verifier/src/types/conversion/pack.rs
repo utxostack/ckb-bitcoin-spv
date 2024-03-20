@@ -104,6 +104,7 @@ impl Pack<packed::SpvTypeArgs> for core::SpvTypeArgs {
         packed::SpvTypeArgs::new_builder()
             .type_id(self.type_id.pack())
             .clients_count(self.clients_count.into())
+            .flags(self.flags.into())
             .build()
     }
 }

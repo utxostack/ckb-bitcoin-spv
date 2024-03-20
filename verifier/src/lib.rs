@@ -11,6 +11,7 @@ extern crate core;
 #[macro_use]
 mod log;
 
+pub mod constants;
 pub mod error;
 pub mod types;
 pub mod utilities;

@@ -3499,6 +3499,7 @@ impl ::core::fmt::Display for SpvTypeArgs {
         write!(f, "{} {{ ", Self::NAME)?;
         write!(f, "{}: {}", "type_id", self.type_id())?;
         write!(f, ", {}: {}", "clients_count", self.clients_count())?;
+        write!(f, ", {}: {}", "flags", self.flags())?;
         write!(f, " }}")
     }
 }
@@ -3509,18 +3510,21 @@ impl ::core::default::Default for SpvTypeArgs {
     }
 }
 impl SpvTypeArgs {
-    const DEFAULT_VALUE: [u8; 33] = [
+    const DEFAULT_VALUE: [u8; 34] = [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0,
+        0, 0, 0, 0,
     ];
-    pub const TOTAL_SIZE: usize = 33;
-    pub const FIELD_SIZES: [usize; 2] = [32, 1];
-    pub const FIELD_COUNT: usize = 2;
+    pub const TOTAL_SIZE: usize = 34;
+    pub const FIELD_SIZES: [usize; 3] = [32, 1, 1];
+    pub const FIELD_COUNT: usize = 3;
     pub fn type_id(&self) -> Hash {
         Hash::new_unchecked(self.0.slice(0..32))
     }
     pub fn clients_count(&self) -> Byte {
         Byte::new_unchecked(self.0.slice(32..33))
+    }
+    pub fn flags(&self) -> Byte {
+        Byte::new_unchecked(self.0.slice(33..34))
     }
     pub fn as_reader<'r>(&'r self) -> SpvTypeArgsReader<'r> {
         SpvTypeArgsReader::new_unchecked(self.as_slice())
@@ -3551,6 +3555,7 @@ impl molecule::prelude::Entity for SpvTypeArgs {
         Self::new_builder()
             .type_id(self.type_id())
             .clients_count(self.clients_count())
+            .flags(self.flags())
     }
 }
 #[derive(Clone, Copy)]
@@ -3574,18 +3579,22 @@ impl<'r> ::core::fmt::Display for SpvTypeArgsReader<'r> {
         write!(f, "{} {{ ", Self::NAME)?;
         write!(f, "{}: {}", "type_id", self.type_id())?;
         write!(f, ", {}: {}", "clients_count", self.clients_count())?;
+        write!(f, ", {}: {}", "flags", self.flags())?;
         write!(f, " }}")
     }
 }
 impl<'r> SpvTypeArgsReader<'r> {
-    pub const TOTAL_SIZE: usize = 33;
-    pub const FIELD_SIZES: [usize; 2] = [32, 1];
-    pub const FIELD_COUNT: usize = 2;
+    pub const TOTAL_SIZE: usize = 34;
+    pub const FIELD_SIZES: [usize; 3] = [32, 1, 1];
+    pub const FIELD_COUNT: usize = 3;
     pub fn type_id(&self) -> HashReader<'r> {
         HashReader::new_unchecked(&self.as_slice()[0..32])
     }
     pub fn clients_count(&self) -> ByteReader<'r> {
         ByteReader::new_unchecked(&self.as_slice()[32..33])
+    }
+    pub fn flags(&self) -> ByteReader<'r> {
+        ByteReader::new_unchecked(&self.as_slice()[33..34])
     }
 }
 impl<'r> molecule::prelude::Reader<'r> for SpvTypeArgsReader<'r> {
@@ -3613,17 +3622,22 @@ impl<'r> molecule::prelude::Reader<'r> for SpvTypeArgsReader<'r> {
 pub struct SpvTypeArgsBuilder {
     pub(crate) type_id: Hash,
     pub(crate) clients_count: Byte,
+    pub(crate) flags: Byte,
 }
 impl SpvTypeArgsBuilder {
-    pub const TOTAL_SIZE: usize = 33;
-    pub const FIELD_SIZES: [usize; 2] = [32, 1];
-    pub const FIELD_COUNT: usize = 2;
+    pub const TOTAL_SIZE: usize = 34;
+    pub const FIELD_SIZES: [usize; 3] = [32, 1, 1];
+    pub const FIELD_COUNT: usize = 3;
     pub fn type_id(mut self, v: Hash) -> Self {
         self.type_id = v;
         self
     }
     pub fn clients_count(mut self, v: Byte) -> Self {
         self.clients_count = v;
+        self
+    }
+    pub fn flags(mut self, v: Byte) -> Self {
+        self.flags = v;
         self
     }
 }
@@ -3636,6 +3650,7 @@ impl molecule::prelude::Builder for SpvTypeArgsBuilder {
     fn write<W: molecule::io::Write>(&self, writer: &mut W) -> molecule::io::Result<()> {
         writer.write_all(self.type_id.as_slice())?;
         writer.write_all(self.clients_count.as_slice())?;
+        writer.write_all(self.flags.as_slice())?;
         Ok(())
     }
     fn build(&self) -> Self::Entity {
