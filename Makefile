@@ -1,6 +1,6 @@
 CARGO := @cargo
 
-MOLC := @moleculec
+MOLC := moleculec
 MOLC_VERSION := 0.7.5
 
 NEXTEST_RUN_ARGS := --no-fail-fast --success-output never --failure-output final

@@ -53,6 +53,7 @@ struct SpvClient {
 struct SpvTypeArgs {
     type_id: Hash,
     clients_count: byte,
+    flags: byte,
 }
 
 //

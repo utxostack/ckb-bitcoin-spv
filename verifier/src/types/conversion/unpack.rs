@@ -104,6 +104,7 @@ impl<'r> Unpack<core::SpvTypeArgs> for packed::SpvTypeArgsReader<'r> {
         core::SpvTypeArgs {
             type_id: self.type_id().unpack(),
             clients_count: self.clients_count().into(),
+            flags: self.flags().into(),
         }
     }
 }
