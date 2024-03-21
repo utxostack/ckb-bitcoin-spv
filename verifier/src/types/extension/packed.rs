@@ -74,7 +74,7 @@ impl packed::SpvBootstrap {
             .map_err(|_| BootstrapError::Pow)?
             .into();
         let target_adjust_info = packed::TargetAdjustInfo::encode(header.time, header.bits);
-        let digest = core::HeaderDigest::new_leaf(height, block_hash);
+        let digest = core::HeaderDigest::new_leaf(height, &header);
         let client = core::SpvClient {
             id: 0,
             tip_block_hash: block_hash,
@@ -179,7 +179,7 @@ impl packed::SpvClient {
                     _ => {}
                 }
             }
-            let digest = core::HeaderDigest::new_leaf(new_max_height, new_tip_block_hash);
+            let digest = core::HeaderDigest::new_leaf(new_max_height, &header);
             trace!(
                 "tip block hash: {new_tip_block_hash:#x}, max height: {new_max_height}, \
                 digest: {digest}"
@@ -374,7 +374,7 @@ impl packed::SpvClient {
                     "verify MMR proof for header-{height} with \
                     index: {index}, position: {position}, root: {block_hash:#x}"
                 );
-                let digest = core::HeaderDigest::new_leaf(height, block_hash.into()).pack();
+                let digest = core::HeaderDigest::new_leaf(height, &header).pack();
                 vec![(position, digest)]
             };
             proof
@@ -383,5 +383,12 @@ impl packed::SpvClient {
         }
 
         Ok(header)
+    }
+
+    /// Compare two chains, which is better.
+    pub fn is_better_than(&self, other: &Self) -> bool {
+        let self_work = self.headers_mmr_root().partial_chain_work().unpack();
+        let other_work = other.headers_mmr_root().partial_chain_work().unpack();
+        self_work > other_work
     }
 }

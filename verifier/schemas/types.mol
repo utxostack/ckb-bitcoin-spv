@@ -5,6 +5,7 @@
 //
 
 array Uint32 [byte; 4];
+array Uint256 [byte; 32];
 array Hash [byte; 32];
 
 array Header [byte; 80];
@@ -19,6 +20,7 @@ vector Bytes <byte>;
 struct HeaderDigest {
     min_height: Uint32,
     max_height: Uint32,
+    partial_chain_work: Uint256,
     children_hash: Hash,
 }
 

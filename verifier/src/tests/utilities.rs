@@ -15,3 +15,12 @@ pub(crate) fn decode_from_bin_file<T: Decodable, P: AsRef<Path>>(bin_file: P) ->
         .unwrap();
     decode_from_slice(&v)
 }
+
+pub(crate) fn load_from_bin_file<P: AsRef<Path>>(bin_file: P) -> Vec<u8> {
+    File::open(bin_file.as_ref())
+        .and_then(|mut file| {
+            let mut data = Vec::new();
+            file.read_to_end(&mut data).map(|_| data)
+        })
+        .unwrap()
+}

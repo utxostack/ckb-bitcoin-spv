@@ -4,7 +4,9 @@
 
 use alloc::format;
 
+use bitcoin::pow::Target;
 use ckb_mmr::{Error as MMRError, Merge, MerkleProof, Result as MMRResult, MMR};
+use ethereum_types::U256;
 
 use crate::{
     core::cmp::PartialEq,
@@ -30,10 +32,14 @@ pub fn hash_concat(lhs: &core::Hash, rhs: &core::Hash) -> core::Hash {
 
 impl core::HeaderDigest {
     /// Creates a new header digest for a leaf node.
-    pub fn new_leaf(height: u32, block_hash: core::Hash) -> Self {
+    pub fn new_leaf(height: u32, header: &core::Header) -> Self {
+        let block_hash = header.block_hash().into();
+        let target: Target = header.bits.into();
+        let blockwork = U256::from_little_endian(&target.to_work().to_le_bytes());
         Self {
             min_height: height,
             max_height: height,
+            partial_chain_work: blockwork,
             children_hash: block_hash,
         }
     }
@@ -72,11 +78,14 @@ impl Merge for MergeHeaderDigest {
             );
             return Err(MMRError::MergeError(errmsg));
         }
+        let lhs_work = lhs.partial_chain_work().unpack();
+        let rhs_work = rhs.partial_chain_work().unpack();
+        let partial_chain_work = lhs_work + rhs_work;
         let children_hash = hash_concat(&lhs.calc_mmr_hash(), &rhs.calc_mmr_hash());
         Ok(Self::Item::new_builder()
             .min_height(lhs.min_height())
             .max_height(rhs.max_height())
-            .children_hash(children_hash.pack())
+            .partial_chain_work(partial_chain_work.pack())
             .children_hash(children_hash.pack())
             .build())
     }

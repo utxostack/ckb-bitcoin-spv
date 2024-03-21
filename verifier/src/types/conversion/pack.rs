@@ -1,6 +1,7 @@
 use alloc::vec::Vec;
 
 use bitcoin::consensus::serialize;
+use ethereum_types::U256;
 
 use crate::types::{bytes::Bytes, core, packed, prelude::*};
 
@@ -12,6 +13,14 @@ impl Pack<packed::Uint32> for u32 {
     fn pack(&self) -> packed::Uint32 {
         let le = self.to_le_bytes();
         packed::Uint32::new_unchecked(Bytes::from(le.to_vec()))
+    }
+}
+
+impl Pack<packed::Uint256> for U256 {
+    fn pack(&self) -> packed::Uint256 {
+        let mut le = [0u8; 32];
+        self.to_little_endian(&mut le);
+        packed::Uint256::new_unchecked(Bytes::from(le.to_vec()))
     }
 }
 
@@ -59,6 +68,7 @@ impl Pack<packed::HeaderDigest> for core::HeaderDigest {
         packed::HeaderDigest::new_builder()
             .min_height(self.min_height.pack())
             .max_height(self.max_height.pack())
+            .partial_chain_work(self.partial_chain_work.pack())
             .children_hash(self.children_hash.pack())
             .build()
     }

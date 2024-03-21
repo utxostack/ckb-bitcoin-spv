@@ -20,6 +20,7 @@ pub use bitcoin::{
     pow::{CompactTarget, Target},
 };
 pub use bitcoin_hashes::sha256d::Hash;
+pub use ethereum_types::U256;
 pub use molecule::bytes::Bytes;
 
 use crate::types::packed;
@@ -37,6 +38,8 @@ pub struct HeaderDigest {
     pub min_height: u32,
     /// The max height of the headers in MMR.
     pub max_height: u32,
+    /// Chain work between min height and max height.
+    pub partial_chain_work: U256,
     /// The block hash for leaves; otherwise, the hash of children nodes.
     pub children_hash: Hash,
 }
