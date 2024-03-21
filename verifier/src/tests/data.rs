@@ -33,6 +33,10 @@ pub(crate) fn find_bin_files(in_dir: &str, filename_prefix: &str) -> Vec<PathBuf
     paths
 }
 
+pub(crate) fn find_bin_file(in_dir: &str, filename: &str) -> PathBuf {
+    root().join(in_dir).join(filename)
+}
+
 mod check_entry {
     use walkdir::DirEntry;
 

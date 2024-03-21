@@ -1,5 +1,7 @@
 use alloc::borrow::ToOwned;
 
+use ethereum_types::U256;
+
 use crate::types::{core, packed, prelude::*};
 
 macro_rules! impl_conversion_for_entity_unpack {
@@ -32,6 +34,15 @@ impl<'r> Unpack<u32> for packed::Uint32Reader<'r> {
 }
 impl_conversion_for_entity_unpack!(Uint32, u32);
 
+impl<'r> Unpack<U256> for packed::Uint256Reader<'r> {
+    fn unpack(&self) -> U256 {
+        let mut b = [0u8; 32];
+        b.copy_from_slice(self.as_slice());
+        U256::from_little_endian(&b)
+    }
+}
+impl_conversion_for_entity_unpack!(Uint256, U256);
+
 impl<'r> Unpack<core::Hash> for packed::HashReader<'r> {
     fn unpack(&self) -> core::Hash {
         let mut b = [0u8; 32];
@@ -57,6 +68,7 @@ impl<'r> Unpack<core::HeaderDigest> for packed::HeaderDigestReader<'r> {
         core::HeaderDigest {
             min_height: self.min_height().unpack(),
             max_height: self.max_height().unpack(),
+            partial_chain_work: self.partial_chain_work().unpack(),
             children_hash: self.children_hash().unpack(),
         }
     }

@@ -31,7 +31,7 @@ impl DummyService {
         let client = {
             let mut mmr = mmr::ClientRootMMR::new(0, &store);
             let block_hash = header.block_hash().into();
-            let digest = core::HeaderDigest::new_leaf(height, block_hash).pack();
+            let digest = core::HeaderDigest::new_leaf(height, &header).pack();
             mmr.push(digest)?;
             let headers_mmr_root = mmr.get_root()?.unpack();
             mmr.commit()?;
@@ -70,7 +70,7 @@ impl DummyService {
             let position = mmr::lib::leaf_index_to_pos(u64::from(index));
 
             block_hash = header.block_hash().into();
-            let digest = core::HeaderDigest::new_leaf(height, block_hash).pack();
+            let digest = core::HeaderDigest::new_leaf(height, header).pack();
 
             positions.push(position);
             mmr.push(digest)?;
