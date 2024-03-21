@@ -100,8 +100,8 @@ impl fmt::Display for HeaderDigest {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "{{ headers-range: [{}, {}], hash: {:#x} }}",
-            self.min_height, self.max_height, self.children_hash
+            "{{ headers-range: [{}, {}], work: {:#066x}, hash: {:#x} }}",
+            self.min_height, self.max_height, self.partial_chain_work, self.children_hash
         )
     }
 }
