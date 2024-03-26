@@ -20,8 +20,8 @@ pub use bitcoin::{
     pow::{CompactTarget, Target},
 };
 pub use bitcoin_hashes::sha256d::Hash;
-pub use ethereum_types::U256;
 pub use molecule::bytes::Bytes;
+pub use primitive_types::U256;
 
 use crate::types::packed;
 

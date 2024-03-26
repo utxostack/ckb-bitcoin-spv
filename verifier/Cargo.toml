@@ -11,7 +11,7 @@ repository = "https://github.com/ckb-cell/ckb-bitcoin-spv"
 [dependencies]
 bitcoin = { version = "0.31", default-features = false }
 bitcoin_hashes = { version = "0.13", default-features = false }
-ethereum-types = { version = "0.14.1", default-features = false }
+primitive-types = { version = "0.12.2", default-features = false }
 molecule = { version = "=0.7.5", default-features = false }
 ckb-mmr = { version = "0.6", default-features = false, package = "ckb-merkle-mountain-range" }
 log = { version = "0.4", optional = true }
@@ -25,7 +25,7 @@ default = ["std"]
 std = [
     "bitcoin/std",
     "bitcoin_hashes/std",
-    "ethereum-types/std",
+    "primitive-types/std",
     "molecule/std",
     "ckb-mmr/std",
     "log",
