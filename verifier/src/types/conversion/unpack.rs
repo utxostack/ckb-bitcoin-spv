@@ -1,6 +1,6 @@
 use alloc::borrow::ToOwned;
 
-use ethereum_types::U256;
+use primitive_types::U256;
 
 use crate::types::{core, packed, prelude::*};
 

@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 
 use bitcoin::consensus::serialize;
-use ethereum_types::U256;
+use primitive_types::U256;
 
 use crate::types::{bytes::Bytes, core, packed, prelude::*};
 

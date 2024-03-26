@@ -6,7 +6,7 @@ use alloc::format;
 
 use bitcoin::pow::Target;
 use ckb_mmr::{Error as MMRError, Merge, MerkleProof, Result as MMRResult, MMR};
-use ethereum_types::U256;
+use primitive_types::U256;
 
 use crate::{
     core::cmp::PartialEq,

@@ -3,7 +3,7 @@
 //! [Bitcoin]: https://bitcoin.org/
 
 use bitcoin::{blockdata::constants::DIFFCHANGE_TIMESPAN, pow::Target};
-use ethereum_types::U256;
+use primitive_types::U256;
 
 /// Calculates the next target.
 ///

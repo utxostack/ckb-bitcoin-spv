@@ -4,7 +4,7 @@ use bitcoin::{
     blockdata::constants::DIFFCHANGE_INTERVAL,
     pow::{CompactTarget, Target},
 };
-use ethereum_types::U256;
+use primitive_types::U256;
 
 use crate::{tests, types::core, utilities::bitcoin::calculate_next_target};
 
