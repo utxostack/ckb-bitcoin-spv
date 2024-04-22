@@ -167,7 +167,10 @@ impl packed::SpvClient {
                 match (new_max_height + 1) % DIFFCHANGE_INTERVAL {
                     // Next block is the first block for a new difficulty.
                     0 => {
-                        let prev_target = new_info.1.into();
+                        // See the above check:
+                        // - For mainnet, `header.bits` should be as the same as `new_info.1`.
+                        // - But for testnet, it could be not.
+                        let prev_target = header.bits.into();
                         let next_target =
                             calculate_next_target(prev_target, new_info.0, header.time);
                         new_info.1 = next_target.to_compact_lossy();
