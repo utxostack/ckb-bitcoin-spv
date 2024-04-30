@@ -17,7 +17,11 @@ ckb-mmr = { version = "0.6", default-features = false, package = "ckb-merkle-mou
 log = { version = "0.4", optional = true }
 
 [dev-dependencies]
+ckb-sdk = "=3.1.0"
+ckb-jsonrpc-types = "0.114.0"
+ckb-types = "0.114.0"
 env_logger = "0.11"
+serde_json = "1.0"
 walkdir = "2.4"
 
 [features]
