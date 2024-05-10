@@ -1,9 +1,8 @@
 use std::fs::read_to_string;
 
-use ckb_jsonrpc_types::{Either, TransactionView as JsonTransactionView};
-use ckb_sdk::CkbRpcClient;
+use alloc::format;
+use ckb_jsonrpc_types::TransactionView;
 use ckb_types::packed::WitnessArgs;
-
 use serde_json::from_str as from_json_str;
 
 use crate::{
@@ -15,8 +14,6 @@ use crate::{
         prelude::*,
     },
 };
-
-const CKB_URL: &str = "https://testnet.ckbapp.dev/";
 
 // This case shows that:
 // - For the main network, `header.bits` should be the same as `new_info.1`.
@@ -46,7 +43,7 @@ fn verify_new_client_common(tx_file: &str, cell_dep_index: usize) {
 
     let path = tests::data::find_bin_file("testnet", tx_file);
     let tx = read_to_string(path).unwrap();
-    let tx: JsonTransactionView = from_json_str(&tx).unwrap();
+    let tx: TransactionView = from_json_str(&tx).unwrap();
 
     let witnesses = tx.inner.witnesses;
     let witness_args = WitnessArgs::from_slice(witnesses[0].as_bytes()).unwrap();
@@ -57,15 +54,12 @@ fn verify_new_client_common(tx_file: &str, cell_dep_index: usize) {
     let client = SpvClient::from_slice(client_bin.as_bytes()).unwrap();
 
     let cell_dep = tx.inner.cell_deps[cell_dep_index].out_point.clone();
-    let ckb_client = CkbRpcClient::new(CKB_URL);
-    let previous_tx = ckb_client
-        .get_transaction(cell_dep.tx_hash)
-        .unwrap()
-        .unwrap();
-    let previous_tx = match previous_tx.transaction.unwrap().inner {
-        Either::Left(tx) => tx,
-        Either::Right(bytes) => serde_json::from_slice(bytes.as_bytes()).unwrap(),
-    };
+    let path = tests::data::find_bin_file(
+        "testnet",
+        format!("tx-0x{}.json", cell_dep.tx_hash).as_str(),
+    );
+    let previous_tx = read_to_string(path).unwrap();
+    let previous_tx: TransactionView = from_json_str(&previous_tx).unwrap();
     let cell_dep_data_bin = &previous_tx.inner.outputs_data[cell_dep.index.value() as usize];
     let cell_dep_client = SpvClient::from_slice(cell_dep_data_bin.as_bytes()).unwrap();
 
