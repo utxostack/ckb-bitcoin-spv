@@ -84,7 +84,8 @@ impl DummyService {
                         header.time
                     );
                     let start_time: u32 = self.client.target_adjust_info.start_time().unpack();
-                    let next_target = calculate_next_target(curr_target, start_time, header.time);
+                    let next_target =
+                        calculate_next_target(curr_target, start_time, header.time, 0);
                     log::info!(">>> calculated new target  {next_target:#x}");
                     let next_bits = next_target.to_compact_lossy();
                     let next_target: core::Target = next_bits.into();

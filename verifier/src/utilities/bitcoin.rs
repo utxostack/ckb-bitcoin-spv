@@ -5,6 +5,8 @@
 use bitcoin::{blockdata::constants::DIFFCHANGE_TIMESPAN, pow::Target};
 use primitive_types::U256;
 
+use crate::types::core::BitcoinChainType;
+
 /// Calculates the next target.
 ///
 /// N.B. The end time is not the block time of the next 2016-th header.
@@ -12,7 +14,12 @@ use primitive_types::U256;
 /// Ref:
 /// - [What is the Target in Bitcoin?](https://learnmeabitcoin.com/technical/target)
 /// - [`CalculateNextWorkRequired(..)` in Bitcoin source code](https://github.com/bitcoin/bitcoin/blob/v26.0/src/pow.cpp#L49)
-pub fn calculate_next_target(prev_target: Target, start_time: u32, end_time: u32) -> Target {
+pub fn calculate_next_target(
+    prev_target: Target,
+    start_time: u32,
+    end_time: u32,
+    flags: u8,
+) -> Target {
     let expected = DIFFCHANGE_TIMESPAN;
     let actual = {
         let mut actual = end_time - start_time;
@@ -40,9 +47,13 @@ pub fn calculate_next_target(prev_target: Target, start_time: u32, end_time: u32
     };
 
     let target = Target::from_le_bytes(le_bytes);
-    if target > Target::MAX {
+    let max_target = match flags.into() {
+        BitcoinChainType::Signet => Target::MAX_ATTAINABLE_SIGNET,
+        _ => Target::MAX,
+    };
+    if target > max_target {
         trace!("fallback to the max target");
-        Target::MAX
+        max_target
     } else {
         trace!("use the calculated target");
         target

@@ -51,7 +51,8 @@ fn main_chain_targets_and_chainwork() {
             match (height + 1) % interval {
                 0 => {
                     assert!(prev_height + interval - 1 == height);
-                    let next_target = calculate_next_target(curr_target, start_time, header.time);
+                    let next_target =
+                        calculate_next_target(curr_target, start_time, header.time, 0);
                     log::info!(">>> calculated new target  {next_target:#x}");
                     next_bits = next_target.to_compact_lossy();
                     let next_target: Target = next_bits.into();

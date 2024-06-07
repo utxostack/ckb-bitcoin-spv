@@ -9,7 +9,6 @@ use bitcoin::{
 use molecule::bytes::Bytes;
 
 use crate::{
-    constants,
     core::result::Result,
     error::{BootstrapError, UpdateError, VerifyTxError},
     types::{core, packed, prelude::*},
@@ -149,19 +148,20 @@ impl packed::SpvClient {
                         expect {expected} but got {actual}"
                     );
                 });
-                if flags & constants::FLAG_DISABLE_DIFFICULTY_CHECK == 0 {
+
+                // For mainnet and signet, `header.bits` should be as the same as `new_info.1`.
+                // But for testnet, it could be not.
+                if core::BitcoinChainType::Testnet != flags.into() {
                     return Err(UpdateError::Difficulty);
                 }
             }
+
             // Check POW.
-            new_tip_block_hash = if flags & constants::FLAG_DISABLE_DIFFICULTY_CHECK == 0 {
-                header
-                    .validate_pow(new_info.1.into())
-                    .map_err(|_| UpdateError::Pow)?
-            } else {
-                header.block_hash()
-            }
-            .into();
+            new_tip_block_hash = header
+                .validate_pow(header.bits.into())
+                .map_err(|_| UpdateError::Pow)?
+                .into();
+
             // Update the target adjust info.
             {
                 match (new_max_height + 1) % DIFFCHANGE_INTERVAL {
@@ -172,7 +172,7 @@ impl packed::SpvClient {
                         // - But for testnet, it could be not.
                         let prev_target = header.bits.into();
                         let next_target =
-                            calculate_next_target(prev_target, new_info.0, header.time);
+                            calculate_next_target(prev_target, new_info.0, header.time, flags);
                         new_info.1 = next_target.to_compact_lossy();
                     }
                     // Current block is the first block for a new difficulty.
