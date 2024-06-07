@@ -155,7 +155,6 @@ impl packed::SpvClient {
                     return Err(UpdateError::Difficulty);
                 }
             }
-
             // Check POW.
             new_tip_block_hash = header
                 .validate_pow(header.bits.into())

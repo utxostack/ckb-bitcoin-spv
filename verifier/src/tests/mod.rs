@@ -6,6 +6,7 @@ use log::LevelFilter;
 mod bitcoin;
 
 pub(crate) mod data;
+pub(crate) mod signet;
 pub(crate) mod testnet;
 pub(crate) mod utilities;
 
