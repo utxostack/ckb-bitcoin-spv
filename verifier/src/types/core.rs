@@ -23,7 +23,7 @@ pub use bitcoin_hashes::sha256d::Hash;
 pub use molecule::bytes::Bytes;
 pub use primitive_types::U256;
 
-use crate::types::packed;
+use crate::{constants::*, types::packed};
 
 //
 // Proofs
@@ -114,5 +114,24 @@ impl fmt::Display for SpvClient {
             "{{ id: {}, tip: {:#x}, mmr-root: {} }}",
             self.id, self.tip_block_hash, self.headers_mmr_root
         )
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BitcoinChainType {
+    Mainnet,
+    Testnet,
+    Signet,
+    Other, // For future use.
+}
+
+impl From<u8> for BitcoinChainType {
+    fn from(flags: u8) -> Self {
+        match flags & 0b1100_0000 {
+            FLAG_CHAIN_TYPE_MAINNET => BitcoinChainType::Mainnet,
+            FLAG_CHAIN_TYPE_TESTNET => BitcoinChainType::Testnet,
+            FLAG_CHAIN_TYPE_SIGNET => BitcoinChainType::Signet,
+            _ => BitcoinChainType::Other,
+        }
     }
 }
