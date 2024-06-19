@@ -1,60 +1,48 @@
 # The Design of CKB Bitcoin SPV
 
-CKB Bitcoin SPV is a library, for doing Bitcoin simplified payment
-verification on CKB.
+CKB Bitcoin SPV is a library designed to facilitate Bitcoin simplified payment verification (SPV) on Nervos CKB.
 
 ## Abstract
 
-This document describes the design and explains the technical details of CKB
-Bitcoin SPV, which allows users to do on-chain verification for bitcoin
-transactions on CKB chain.
+This document provides a comprehensive overview of the design and technical details of the CKB Bitcoin SPV. Through this material, developers will acquire the knowledge needed to perform on-chain verification of Bitcoin transactions on Nervos CKB.
 
 ## Background
 
-For understanding this document, the knowledge of the following concepts are
-**required**.\
-But we won't discuss them here, please learn them on their own documents.
+A foundational knowledge of the following concepts is **required** for a better understanding of this document. 
+
+Below are brief explanations of each term along with links to sources for detailed learning:
 
 ### Simplified Payment Verification (SPV)
 
-[Simple Payment Verification][SPV], usually abbreviated to SPV, is noted in
-Bitcoin whitepaper. It allows a transaction recipient to prove that the
-sender has control of the source funds of the payment they are offering
-without downloading the full Blockchain, by utilizing the properties of
-Merkle proofs.
+[Simple Payment Verification][SPV] (SPV) allows a transaction receiver to confirm that the sender possesses and controls the funds being sent without needing to download the entire blockchain. This is achieved using Merkle proofs.
 
-### Bitcoin Difficulty Adjustments
+Refer to the [Bitcoin whitepaper](https://bitcoin.org/bitcoin.pdf) for more details.
 
-Every 2016 blocks (which should take two weeks if this goal is kept
-perfectly), every Bitcoin client compares the actual time it took to
-generate these blocks with the 2 weeks goal and modifies the target by the
-percentage difference.[^1]
+### Bitcoin Difficulty Adjustment
+
+Bitcoin adjusts the computational difficulty of mining a block every 2016 blocks, which ideally takes two weeks. Every Bitcoin client
+adjusts the mining difficulty by comparing the actual production time of the last 2016 blocks to the intended 2-week period, and modifies the target based on the percentage difference. [^1]
 
 > [!Note]
-> The difficulty re-target being based on the time taken for the previous
-> 2015 blocks instead of 2016 blocks.[^2]
+> “The difficulty re-target [is] based on the time taken for the previous 2015 blocks instead of 2016 blocks." [^2]
 
-### Bitcoin Merkle Proof
+### Bitcoin Merkle Proofs
 
-A proof that proves a transaction (in fact, just transaction hash) was
-included in a block.
-
-It could be fetched through the RPC API [`gettxoutproof`], and be verified
-with the RPC API [`verifytxoutproof`].
+A Bitcoin Merkle proof verifies that a transaction - or specifically, its hash - was included in a given block. It can be fetched
+through the RPC API  [`gettxoutproof`] and verified with RPC API [`verifytxoutproof`].
 
 ### Merkle Mountain Range (MMR)
 
-A [Merkle Mountain Range (MMR)][MMR] is a binary hash tree that allows for
-efficient appends of new leaves without changing the value of existing nodes.
+A [Merkle Mountain Range (MMR)][MMR] is a binary hash tree data structure designed to allow efficient appending of new leaves while
+maintaining the integrity of the existing nodes. 
 
-An MMR proof could be used to prove whether an item is included in an MMR
-root or not.
+A MMR proof can be utilized to verify whether a specific item is included in the MMR root.
 
 ## Overview
 
-First, we could divide the whole problem into 2 smaller and standalone problems.
+Let’s break down the entire problem into two smaller, independent steps.
 
-### 1. On CKB, prove a header belongs to the bitcoin chain
+### 1. On CKB, prove if a header belongs to the bitcoin chain
 
 #### 1.1. Data preparation stage
 
@@ -62,111 +50,95 @@ Since we want to do on-chain verification, so the resources are limited, for
 example, we couldn't afford 100 MiB storage or 30 seconds expensive
 computation, on CKB.
 
-So, we introduce the [Merkle Mountain Range (MMR)][MMR] to solve this
-problem: we only save the MMR root of bitcoin headers on CKB.
+Given on-chain verification comes with resource constraints, such as the inability to afford 100 MiB of storage or 30 seconds of
+computation on CKB, the MMR is introduced to address this issue by only saving the MMR root of Bitcoin headers on CKB.
 
-- First, we initialize a cell with a bitcoin header at any height.
+Here's how it works:
 
-  An MMR tree will be constructed with this header only, and its root will
-  be saved in the cell data.
+1. initialize a cell with a Bitcoin header at any height.
 
-  No on-chain verification will be done for this data.
-  Users have to check the data off-chain, then trust it.
+   An MMR tree is constructed with the header, and its root is saved in the cell data.
+   No on-chain verification is performed; users need to verify the data off-chain and then trust it.
 
-- Also, there will be a service, which builds the same MMR tree but off-chain.
+3. a service will be implemented to build the same MMR tree off-chain.
 
-  This service will listen to the bitcoin chain and wait for the next block.
+   This service will listen to the Bitcoin blockchain for new blocks. When a new Bitcoin block is mined, the service will update the
+   MMR tree with the new block, calculate a new MMR root, and then send both the new MMR root and the new block header to the CKB chain.
 
-  When the next bitcoin block is mined, this service will append this new
-  bitcoin block into the MMR tree, calculate a new MMR root, then send the
-  new MMR root and the new header to the CKB chain.
+4. an on-chain script performs the following checks:
 
-- An on-chain script will check those new data.
+   1) Check the new header with two parts:
 
-  - First, check the new header with two parts:
-
-    - The field "previous block header hash" in headers[^3] should be correct.
+    - The field "previous block header hash" in headers[^3] should be correct;
 
     - The POW for the block should be valid.
 
-      For security, the on-chain script has to calculate the POW target for
-      the next block by itself.
-
-      So, there are two more data have to be cached on chain:
+      For security, the on-chain script calculates the POW target for
+      the next block, requiring the on-chain caching of:
 
       - The start time of the first block after difficulty adjustment.
 
       - If the next block is one of the first blocks after difficulty
         adjustment, its target should be calculated and cached.
 
-  - Then, check the new MMR root:
+    2) Check the new MMR root:
 
-    - The new MMR root should be constructed based on the previous MMR root,
-      and only the new header should be appended.
+  - The new MMR root should be based on the previous MMR root with only the new header appended.
 
-  After the above checks passed, then save the new data into the cell.
+  Once these checks are passed, the new data is saved into the cell.
 
 > [!NOTE]
-> In bitcoin headers, the height is not stored, but we have to store all
-> heights on CKB chain.\
-> The heights are required for two reasons: calculate the index of MMR and
+> Bitcoin headers do not store the height,
+> but all heights must be stored on CKB chain for two reasons:
+> calculating the MMR index and determining block confirmations.
 > calculate the block confirmations.
 
 #### 1.2. Verification stage
 
-With the stored MMR root on CKB, an on-chain script can check whether a
-bitcoin header is contained in that MMR tree.
+With the stored MMR root on CKB, an on-chain script can verify whether a
+Bitcoin header is part of the MMR tree.
 
-There are 3 items required to be submitted to the CKB chain:
-- The MMR proof of the header which is required to be proven.
+The following dats are required to be submitted to the CKB chain:
+- The MMR proof of the header to be proven.
 - The full data of the header, or its hash.
 - The height of the header.
 
-As the PoW of the header has been verified, if a header is contained within the
-MMR tree on CKB, it implies that the corresponding header is part of the Bitcoin
-chain.
+If the PoW of the header is verified and the header is within the MMR tree on CKB, it confirms that the corresponding header is part of
+the Bitcoin chain.
 
-### 2. On CKB, prove a transaction is in a bitcoin block
+### 2. On CKB, prove if a transaction is in a Bitcoin block
 
 #### 2.1. Data preparation stage
 
-No more data is required to be stored in the CKB chain for transactions
+No additional data is required to be stored on CKB chain for transactions
 verification.
 
 #### 2.2. Verification stage
 
-There is a field "merkle root hash" in bitcoin headers[^3].
+A Bitcoin header contains a field called "merkle root hash" [^3].
 
-A merkle root is derived from the hashes of all transactions included in
+A merkle root is derived from the hashes of all transactions in
 that block, ensuring that none of those transactions can be modified without
 modifying the header.
 
-So, a transaction could be verified whether it's in a header, with the
-merkle root hash and a merkle proof which contains it.
+Thus, a transaction can be verified whether it's in a header, with the merkle root hash and a merkle proof.
 
 ## Optimization
 
-Save any data on chain will occupy the capacity of CKBytes permanently. And,
-not all bitcoin headers will be used.\
-So, we won't save all bitcoin headers on the chain.\
-For verification, we can just put them into the witnesses.
+Storing data on-chain will permanently occupy the capacity of CKBytes. Since not all Bitcoin headers will be used, not all Bitcoin
+headers will be saved on the chain. For verification, they can be included in the `witnesses`.
 
-When users want to verify a bitcoin header, they should submit that header
-to CKB chain, or only its hash is enough.
+When verifying a Bitcoin header, that header or only its hash should be submitted to the CKB chain. 
 
-But when verifies a bitcoin transaction, the full header is required to be
-submitted to CKB chain; because the "merkle root hash" in the header is
-required. \
-An interesting fact is, that the merkle proof of the transaction already
-contains the full header.[^4] So the header doesn't have to be submitted
-alone.
+However, when verifying a Bitcoin transaction, the full header must be submitted to the CKB chain because the "merkle root hash" in the
+header is required. An interesting fact is that the merkle proof of the transaction already contains the full header [^4] , so the
+header doesn't have to be submitted separately.
 
 ## Disadvantages
 
-- Calculate the MMR proof is not simple for normal users.
+- Calculate the MMR proof is complex for average users.
 
-  A service is required, to collect all headers which are contained in the
-  MMR root.
+  A service is needed to collect all headers contained in the MMR root.
 
 ## References
 
