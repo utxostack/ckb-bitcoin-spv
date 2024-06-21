@@ -1,4 +1,4 @@
-# The Design of CKB Bitcoin SPV
+# CKB Bitcoin SPV Design
 
 CKB Bitcoin SPV is a library, for doing Bitcoin simplified payment
 verification on CKB.
@@ -170,13 +170,9 @@ alone.
 
 ## References
 
-- [`CalculateNextWorkRequired(..)`]
+- [`CalculateNextWorkRequired(..)`]: This function is used to calculate the next target.
 
-  The function, which is used to calculate the next target.
-
-- [`CPartialMerkleTree::ExtractMatches(..)`]
-
-  The function ensures that the partial Merkle tree is correctly constructed.
+- [`CPartialMerkleTree::ExtractMatches(..)`]: This function ensures that the partial Merkle tree is correctly constructed.
   It is used to verify that a proof points to transactions.
 
 - [Merkle Mountain Ranges][MMR]
