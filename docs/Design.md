@@ -8,7 +8,7 @@ This document provides a comprehensive overview of the design and technical deta
 
 ## Background
 
-A foundational knowledge of the following concepts is **required** for a better understanding of this document. 
+A basic knowledge of the following concepts is **required** for a better understanding of this document. 
 
 Below are brief explanations of each term along with links to sources for detailed learning:
 
