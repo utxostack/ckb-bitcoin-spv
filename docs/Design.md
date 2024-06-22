@@ -115,7 +115,7 @@ verification.
 
 #### 2.2. Verification stage
 
-A Bitcoin header contains a field called "merkle root hash" [^3].
+A Bitcoin header[^3] contains a field called "merkle root hash".
 
 A merkle root is derived from the hashes of all transactions in
 that block, ensuring that none of those transactions can be modified without
