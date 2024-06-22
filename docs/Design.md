@@ -135,7 +135,7 @@ header doesn't have to be submitted separately.
 
 ## Disadvantages
 
-- Calculate the MMR proof is complex for average users.
+- Calculating the MMR proof is complex for average users.
 
   A service is needed to collect all headers contained in the MMR root.
 
