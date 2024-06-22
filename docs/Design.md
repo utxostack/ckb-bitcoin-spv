@@ -98,7 +98,7 @@ Here's how it works:
 With the stored MMR root on CKB, an on-chain script can verify whether a
 Bitcoin header is part of the MMR tree.
 
-The following dats are required to be submitted to the CKB chain:
+The following data are required to be submitted to the CKB chain:
 - The MMR proof of the header to be proven.
 - The full data of the header, or its hash.
 - The height of the header.
