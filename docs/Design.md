@@ -46,10 +46,6 @@ Let’s break down the entire problem into two smaller, independent steps.
 
 #### 1.1. Data preparation stage
 
-Since we want to do on-chain verification, so the resources are limited, for
-example, we couldn't afford 100 MiB storage or 30 seconds expensive
-computation, on CKB.
-
 Given on-chain verification comes with resource constraints, such as the inability to afford 100 MiB of storage or 30 seconds of
 computation on CKB, the MMR is introduced to address this issue by only saving the MMR root of Bitcoin headers on CKB.
 
@@ -91,7 +87,6 @@ Here's how it works:
 > Bitcoin headers do not store the height,
 > but all heights must be stored on CKB chain for two reasons:
 > calculating the MMR index and determining block confirmations.
-> calculate the block confirmations.
 
 #### 1.2. Verification stage
 
