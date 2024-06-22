@@ -65,7 +65,7 @@ Here's how it works:
    This service will listen to the Bitcoin blockchain for new blocks. When a new Bitcoin block is mined, the service will update the
    MMR tree with the new block, calculate a new MMR root, and then send both the new MMR root and the new block header to the CKB chain.
 
-4. an on-chain script performs the following checks:
+4. an on-chain [script](https://github.com/ckb-cell/ckb-bitcoin-spv-contracts/tree/master/contracts/ckb-bitcoin-spv-type-lock) performs the following checks:
 
    1) Check the new header with two parts:
 
