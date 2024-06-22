@@ -29,7 +29,7 @@ adjusts the mining difficulty by comparing the actual production time of the las
 ### Bitcoin Merkle Proofs
 
 A Bitcoin Merkle proof verifies that a transaction - or specifically, its hash - was included in a given block. It can be fetched
-through the RPC API  [`gettxoutproof`] and verified with RPC API [`verifytxoutproof`].
+through the RPC API [`gettxoutproof`] and verified with RPC API [`verifytxoutproof`].
 
 ### Merkle Mountain Range (MMR)
 
