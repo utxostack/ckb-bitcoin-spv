@@ -58,7 +58,7 @@ Here's how it works:
 1. initialize a cell with a Bitcoin header at any height.
 
    An MMR tree is constructed with the header, and its root is saved in the cell data.
-   No on-chain verification is performed; users need to verify the data off-chain and then trust it.
+   No on-chain verification is performed during this initialization; users need to verify the data off-chain and then trust it.
 
 3. a service will be implemented to build the same MMR tree off-chain.
 
