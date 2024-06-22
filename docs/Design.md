@@ -103,8 +103,7 @@ The following data are required to be submitted to the CKB chain:
 - The full data of the header, or its hash.
 - The height of the header.
 
-If the PoW of the header is verified and the header is within the MMR tree on CKB, it confirms that the corresponding header is part of
-the Bitcoin chain.
+As the PoW of the header is verified and the header is within the MMR tree on CKB, it implies that the corresponding header is part of the Bitcoin chain.
 
 ### 2. On CKB, prove if a transaction is in a Bitcoin block
 
