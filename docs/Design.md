@@ -14,7 +14,7 @@ Below are brief explanations of each term along with links to sources for detail
 
 ### Simplified Payment Verification (SPV)
 
-[Simple Payment Verification][SPV] (SPV) allows a transaction receiver to confirm that the sender possesses and controls the funds being sent without needing to download the entire blockchain. This is achieved using Merkle proofs.
+[Simple Payment Verification][SPV] (SPV) allows a transaction receiver to confirm that the sender has control of the source funds of the payment they are offering, without needing to download the entire blockchain. This is achieved using Merkle proofs.
 
 Refer to the [Bitcoin whitepaper](https://bitcoin.org/bitcoin.pdf) for more details.
 
