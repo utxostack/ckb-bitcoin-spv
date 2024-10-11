@@ -87,11 +87,14 @@ pub struct SpvTypeArgs {
     ///
     /// N.B. Exclude the SPV info cell.
     pub clients_count: u8,
-    /// Bit flags to control features.
+    /// Bit flags to control SPV client features and chain identification.
     ///
     /// From high to low:
-    /// - Set 0-th bit to true, to disable difficulty checks.
-    /// - Other bits are reserved.
+    /// - The two highest bits are reserved for chain type identification:
+    ///   - 0b00 for mainnet
+    ///   - 0b10 for testnet
+    ///   - 0b01 for signet
+    /// - Other bits are reserved for future use.
     pub flags: u8,
 }
 
