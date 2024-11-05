@@ -20,16 +20,16 @@ pub fn calculate_next_target(
     end_time: u32,
     flags: u8,
 ) -> Target {
-    let expected = DIFFCHANGE_TIMESPAN;
+    let expected = DIFFCHANGE_TIMESPAN as i64;
     let actual = {
-        let mut actual = end_time - start_time;
+        let mut actual = (end_time as i64) - (start_time as i64);
         if actual < expected / 4 {
             actual = expected / 4;
         }
         if actual > expected * 4 {
             actual = expected * 4;
         }
-        actual
+        actual as u32
     };
 
     let le_bytes = {
